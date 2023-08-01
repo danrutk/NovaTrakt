@@ -202,7 +202,7 @@ namespace Novatek.Core
                 int gps_read = 16;
 
                 // While we are reading in the sub box
-                while (gps_read < _gpsBox.Size - 8)
+                while (gps_read < _gpsBox.Size)
                 {
                     // Get the GPS box position and size
                     int gps_box_pos = (int)Streams.ReadUInt(fin, true);
