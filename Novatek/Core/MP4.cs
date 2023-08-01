@@ -8,10 +8,6 @@ namespace Novatek.Core
 {
     class MP4
     {
-        private static double lastLat = 0;
-        private static double lastLong = 0;
-        private static bool slowSpeed = false;
-
         private static Log Log = new Log();
 
         // Test to make sure the selected file contains video data
@@ -189,6 +185,10 @@ namespace Novatek.Core
         // Get the GPS data from the file
         public static GPSDataList ReadGPS(string _file, GPSBox _gpsBox)
         {
+            double lastLat = 0;
+            double lastLong = 0;
+            bool slowSpeed = false;
+            
             GPSDataList GPSDataList = new GPSDataList();
 
             try
