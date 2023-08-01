@@ -230,6 +230,8 @@ namespace Novatek.Core
                                         "(Expected size: " + gps_box_size + ", Actual size: " + gps_box_size1 + ", " +
                                         "Expected type: free, Actual type: " + gps_box_type + ", " +
                                         "Expected magic: GPS , Actual magic: " + gps_box_magic + ")\r\n");
+                        // Return to original file seek
+                        fin.Seek(pos, SeekOrigin.Begin);
                         continue;
                     }
 
@@ -337,6 +339,7 @@ namespace Novatek.Core
                     // Return to original file seek
                     fin.Seek(pos, SeekOrigin.Begin);
                 }
+                fin.Close();
             }
             catch (Exception e)
             {
