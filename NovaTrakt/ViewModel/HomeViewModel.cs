@@ -167,10 +167,18 @@ namespace NovaTrakt.ViewModel
                 if (_selectedTrip != value)
                 {
                     _selectedTrip = value;
-                    _journeyList.Where(c => c.Selected == true).ToList().ForEach(a => a.Selected = false);
+                    _journeyList.Where(c => c.Selected == true).ToList().ForEach(a => { a.Selected = false; a.CurrentClip = null; });
                     _journeyList.Where(c => c.StartTime == value.StartTime).ToList().ForEach(a => a.Selected = true);
-                    if (!string.IsNullOrEmpty(_selectedTrip.CurrentClip.FullNameAndPath))
+
+                    CurrentPlayer.Pause();
+                    SparePlayer.Pause();
+                    MediaPlayToggle();
+
+                    if (_selectedTrip == null)
+                        CurrentPlayer.Source = null;
+                    else if (!string.IsNullOrEmpty(_selectedTrip.CurrentClip.FullNameAndPath))
                         CurrentPlayer.Source = new Uri(_selectedTrip.CurrentClip.FullNameAndPath);
+
                     OnPropertyChanged("SelectedTrip");
                 }
             }
@@ -404,8 +412,13 @@ namespace NovaTrakt.ViewModel
                 // Show the spare player
                 SparePlayer.Visibility = Visibility.Visible;
                 CurrentPlayer.Visibility = Visibility.Hidden;
+
+                if (Media.GetMediaState(CurrentPlayer) == MediaState.Play)
+                {
                 SparePlayer.Play();
                 CurrentPlayer.Pause();
+                }
+
                 // Set the maximum of the position bar
                 UI.FindChild<Slider>(Application.Current.MainWindow, "posSlider").Maximum = SparePlayer.NaturalDuration.TimeSpan.TotalSeconds;
                 // Switch the current player with spare
@@ -419,7 +432,7 @@ namespace NovaTrakt.ViewModel
             else if (!string.IsNullOrEmpty(SelectedTrip.CurrentClip.NextFile))
             {
                 PrepareNextClip();
-                Thread.Sleep(10);
+                Thread.Sleep(200);
                 LoadNextClip();
             }
             else
@@ -442,8 +455,13 @@ namespace NovaTrakt.ViewModel
                 // Show the spare player
                 SparePlayer.Visibility = Visibility.Visible;
                 CurrentPlayer.Visibility = Visibility.Hidden;
+
+                if (Media.GetMediaState(CurrentPlayer) == MediaState.Play)
+                {
                 SparePlayer.Play();
                 CurrentPlayer.Pause();
+                }
+
                 // Set the maximum of the position bar
                 UI.FindChild<Slider>(Application.Current.MainWindow, "posSlider").Maximum = SparePlayer.NaturalDuration.TimeSpan.TotalSeconds;
                 // Switch the current player with spare
@@ -457,7 +475,7 @@ namespace NovaTrakt.ViewModel
             else if (!string.IsNullOrEmpty(SelectedTrip.CurrentClip.PreviousFile))
             {
                 PreparePreviousClip();
-                Thread.Sleep(10);
+                Thread.Sleep(200);
                 LoadPreviousClip();
             }
         }
