@@ -72,6 +72,9 @@ namespace NovaTrakt.ViewModel
 
         public HomeViewModel()
         {
+            // .NET 4.5 loses CultureInfo when using task-based asynchronous operations
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en");
+
             openWorker.DoWork += OpenWorker_DoWork;
             openWorker.RunWorkerCompleted += OpenWorker_RunWorkerCompleted;
 
@@ -913,8 +916,8 @@ namespace NovaTrakt.ViewModel
         private void OpenWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             // Force this thread to work in EN Culture
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
-
+            //Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
+            
             // Get all the MP4 files in the chosen directory
             string[] inputFiles;
             string[] inputFolder = Directory.GetFiles(_inputPath, "*.mp4");
@@ -979,7 +982,7 @@ namespace NovaTrakt.ViewModel
             _gps1 = false;
 
             // Force this thread to work in EN Culture
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
+            //Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
 
             // Set the progress status
             _progressDlg.Maximum = _clips.Count();
@@ -1012,7 +1015,7 @@ namespace NovaTrakt.ViewModel
             _gps2 = false;
 
             // Force this thread to work in EN Culture
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
+            //Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
 
             double count = 0;
 
@@ -1039,7 +1042,7 @@ namespace NovaTrakt.ViewModel
         private async void OrganisationWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             // Force this thread to work in EN Culture
-            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
+            //Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
 
             // Sort the list of _Clips by StartTime
             _clips = _clips.OrderBy(o => o.StartTime).ToList();
