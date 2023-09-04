@@ -152,6 +152,11 @@ namespace NovaTrakt.ViewModel
             get { return new RelayCommand(c => _selectInputFolder()); }
         }
 
+        public ICommand SelectFiles
+        {
+            get { return new RelayCommand(c => _selectFiles()); }
+        }
+
         public ICommand ClearFilesSource
         {
             get { return new RelayCommand(c => _clearFilesSource()); }
@@ -891,12 +896,59 @@ namespace NovaTrakt.ViewModel
 
                 // Create a Progress Dialog
                 MetroWindow w = (MetroWindow)Application.Current.MainWindow;
-                _progressDlg = await w.ShowProgressAsync("Please wait...", "Scanning Directory for compatible files.");
+                _progressDlg = await w.ShowProgressAsync("Please wait...", "Scanning for compatible files.");
 
                 // Scan the directory for files
                 _inputPath = inputFolderDialog.FileName;
                 openWorker.RunWorkerAsync();
             }
+        }
+        public async void _selectFiles()
+        {
+            CommonOpenFileDialog selectFileDialog = new CommonOpenFileDialog();
+            selectFileDialog.Title = "Select Files";
+            selectFileDialog.InitialDirectory = AppSettings.getString("LastInputDirectory", @"C:\");
+            selectFileDialog.Multiselect = true;
+            selectFileDialog.EnsureFileExists = true;
+            selectFileDialog.EnsureValidNames = true;
+            selectFileDialog.Filters.Add(new CommonFileDialogFilter("GPS Video", "*.mp4"));
+
+            if (selectFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                string[] fileList = selectFileDialog.FileNames.ToArray();
+
+                // Save the last used directory to user settings
+                if (fileList != null && fileList.Length > 0)
+                    AppSettings.set("LastInputDirectory", Path.GetDirectoryName(fileList[0]));
+
+                // Create a Progress Dialog
+                MetroWindow w = (MetroWindow)Application.Current.MainWindow;
+                _progressDlg = await w.ShowProgressAsync("Please wait...", "Scanning for compatible files.");
+
+                openWorker.RunWorkerAsync(fileList);
+            }
+        }
+
+        public async void dropFiles(string[] dropped)
+        {
+            if (!dropped.Any())
+                return;
+            
+            // Create a Progress Dialog
+            MetroWindow w = (MetroWindow)Application.Current.MainWindow;
+            _progressDlg = await w.ShowProgressAsync("Please wait...", "Scanning for compatible files.");
+
+            List<string> files = new List<string>();
+
+            foreach (string drop in dropped)
+            {
+                if (Directory.Exists(drop))
+                    files.AddRange(Directory.GetFiles(drop, "*.mp4", SearchOption.AllDirectories));
+                else if (drop.ToLower().EndsWith(".mp4"))
+                    files.Add(drop);
+            }
+
+            openWorker.RunWorkerAsync(files.Distinct().ToArray());
         }
 
         private bool _gps1 = false;
@@ -906,7 +958,7 @@ namespace NovaTrakt.ViewModel
         private void OpenWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // Update the progress message and set to indeterminate
-            _progressDlg.SetMessage("Scanning Directory for compatible files.\r\nExtracting GPS Coordinates and Speed Data.");
+            _progressDlg.SetMessage("Scanning for compatible files.\r\nExtracting GPS Coordinates and Speed Data.");
             _progressDlg.SetIndeterminate();
 
             // Organise into journies
@@ -918,8 +970,11 @@ namespace NovaTrakt.ViewModel
             // Force this thread to work in EN Culture
             //Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en");
             
+            string[] inputFiles = (string[])e.Argument;
+
             // Get all the MP4 files in the chosen directory
-            string[] inputFiles;
+            if (inputFiles == null)
+            {
             string[] inputFolder = Directory.GetFiles(_inputPath, "*.mp4");
             if (Directory.Exists(_inputPath + @"\RO"))
             {
@@ -930,6 +985,7 @@ namespace NovaTrakt.ViewModel
             {
                 Log.WriteVerboseLine("RO Directory does not exist.");
                 inputFiles = inputFolder;
+            }
             }
 
             // Set the progress status
@@ -970,7 +1026,7 @@ namespace NovaTrakt.ViewModel
             if (_gps1 && _gps2)
             {
                 // Update the progress message and set to indeterminate
-                _progressDlg.SetMessage("Scanning Directory for compatible files.\r\nExtracting GPS Coordinates and Speed Data.\r\nOrganising Clips into Journeys.");
+                _progressDlg.SetMessage("Scanning for compatible files.\r\nExtracting GPS Coordinates and Speed Data.\r\nOrganising Clips into Journeys.");
                 _progressDlg.SetIndeterminate();
 
                 // Organise into journies
@@ -1003,7 +1059,7 @@ namespace NovaTrakt.ViewModel
             if (_gps1 && _gps2)
             {
                 // Update the progress message and set to indeterminate
-                _progressDlg.SetMessage("Scanning Directory for compatible files.\r\nExtracting GPS Coordinates and Speed Data.\r\nOrganising Clips into Journeys.");
+                _progressDlg.SetMessage("Scanning for compatible files.\r\nExtracting GPS Coordinates and Speed Data.\r\nOrganising Clips into Journeys.");
                 _progressDlg.SetIndeterminate();
 
                 // Organise into journies
@@ -1037,7 +1093,7 @@ namespace NovaTrakt.ViewModel
             MetroWindow w = (MetroWindow)Application.Current.MainWindow;
             if (_clips.Count == 0)
                 await w.ShowMessageAsync("No compatible files found.",
-                                         "No files compatible with NovaTrakt were found in the selected folder. Please check the chosen folder and try again.");
+                                         "No files compatible with NovaTrakt were found. Please check and try again.");
         }
         private async void OrganisationWorker_DoWork(object sender, DoWorkEventArgs e)
         {

@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using NovaTrakt.ViewModel;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace NovaTrakt.View
 {
@@ -7,9 +9,23 @@ namespace NovaTrakt.View
     /// </summary>
     public partial class HomeView : UserControl
     {
+        private HomeViewModel hvm;
         public HomeView()
         {
             InitializeComponent();
+        }
+
+        private void homeView_Drop(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] dropped = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                if (hvm == null)
+                    hvm = (HomeViewModel)DataContext;
+
+                hvm.dropFiles(dropped);
+            }
         }
     }
 }

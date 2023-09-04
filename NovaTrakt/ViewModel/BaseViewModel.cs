@@ -164,6 +164,15 @@ namespace NovaTrakt.ViewModel
             }
         }
 
+        public ICommand SelectFiles
+        {
+            get
+            {
+                HomeViewModel hvm = (HomeViewModel)PageViewModels[0];
+                return new RelayCommand(p => hvm._selectFiles());
+            }
+        }
+
         public string Version
         {
             get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }

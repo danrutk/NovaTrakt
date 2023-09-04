@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:NovaTrakt.View"
              xmlns:Controls="clr-namespace:NovaTrakt.View.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="500" d:DesignWidth="1000">
+             d:DesignHeight="500" d:DesignWidth="1000" AllowDrop="True" Drop="homeView_Drop">
 
     <UserControl.InputBindings>
         <KeyBinding Key="Space" Command="{Binding PlayPause}"/>
@@ -50,6 +50,9 @@
                 <MenuItem Header="_Open Folder"
                           InputGestureText="(CTRL+O)"
                           Command="{Binding SelectInputFolder}"/>
+                <MenuItem Header="Open _Files"
+                          InputGestureText="(CTRL+F)"
+                          Command="{Binding SelectFiles}"/>   
                 <MenuItem Header="_Logging">
                     <MenuItem Header="_Enable Verbose Logging"
                               IsCheckable="True"
